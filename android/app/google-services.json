@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "966694279668",
+    "firebase_url": "https://restaurant-479cb.firebaseio.com",
+    "project_id": "restaurant-479cb",
+    "storage_bucket": "restaurant-479cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966694279668:android:7da81d1c0482f5b5ec41a1",
+        "android_client_info": {
+          "package_name": "com.example.floor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966694279668-hbfsl3bij8sado2roeod7egljhb1n4ag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.floor",
+            "certificate_hash": "e58090313c4d33034e6121c7d2c48ede2808e9a5"
+          }
+        },
+        {
+          "client_id": "966694279668-9sbhk6rkp2rvvh2o8mrlim22ani4242l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7qRdEvblL4lRE5KQv9X8QxD_Up0ZabBc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966694279668-9sbhk6rkp2rvvh2o8mrlim22ani4242l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966694279668:android:4e0412e96766475bec41a1",
+        "android_client_info": {
+          "package_name": "com.pramukh.restuarant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966694279668-ee5lkns9s5marhvihv0cgekkbt3kb909.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pramukh.restuarant",
+            "certificate_hash": "ac23e0780218056e83cfb567515bfebb42f829f0"
+          }
+        },
+        {
+          "client_id": "966694279668-noedoe6gepnpva2tnu2rrjsaqee5o5jl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pramukh.restuarant",
+            "certificate_hash": "5ec7f3cbec5e4fe36730ef55c2c5c50c15d5f859"
+          }
+        },
+        {
+          "client_id": "966694279668-9sbhk6rkp2rvvh2o8mrlim22ani4242l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7qRdEvblL4lRE5KQv9X8QxD_Up0ZabBc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966694279668-9sbhk6rkp2rvvh2o8mrlim22ani4242l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

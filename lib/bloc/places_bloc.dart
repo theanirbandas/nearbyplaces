@@ -1,85 +1,48 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:meta/meta.dart';
-import 'package:nearby/models/place.dart';
 
 part 'places_event.dart';
 part 'places_state.dart';
 
 class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
   
-  final String api = 'AIzaSyAXUZJV__NaYwjpvaMjAfZgZ4AqfaG5gww';
+  final _geo = Geoflutterfire();
+  final _firestore = FirebaseFirestore.instance;
 
   PlacesBloc() : super(PlacesInitial());
 
   @override
   Stream<PlacesState> mapEventToState(PlacesEvent event) async* {
     if(event is LoadPlaces) {
-      yield* _mapLoadPlaces(event.location, event.pageToken);
+      yield* _mapLoadRestaurants(event.lastPlace);
     }
   }
 
-  Stream<PlacesState> _mapLoadPlaces(String location, String pageToken) async* {
+  Stream<PlacesState> _mapLoadRestaurants(DocumentSnapshot last) async* {
     yield PlacesLoading();
 
-    Dio dio = Dio();
+    GeoFirePoint center = _geo.point(latitude: -27.467237358115597, longitude: 153.0305656806858);
+    double radius = 100;
 
-    Map<String, dynamic> parameters = {
-      'location': location,
-      'radius': 1500,
-      'key': api
-    };
+    Query query = last != null ? 
+      _firestore.collection('Restaurants').orderBy('name').startAfterDocument(last).limit(3) :
+      _firestore.collection('Restaurants');//.orderBy('name').limit(3);
 
-    if(pageToken != null)
-      parameters['pagetoken'] = pageToken;
+      print(last);
 
-    try {
-      Response response = await dio.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', queryParameters: parameters);
-
-      if(response.statusCode == HttpStatus.ok) {
-        String nextPageToken = response.data['next_page_token'];
-        List<Place> places = await _getPlaces(location, response.data['results']);
-
-        yield PlaceLoaded(places, nextPageToken);
-      }
-    } on Exception {
-      yield PlaceLoadFailed();
+    Stream<List<DocumentSnapshot>> stream = _geo
+      .collection(collectionRef: query)
+      .within(center: center, radius: radius, field: 'location');
+      
+    await for(List<DocumentSnapshot> dataList in stream) {
+      yield PlaceLoaded(dataList);
+      break;
     }
   }
 
-  Future<List<Place>> _getPlaces(String location, List data) async {
-    Dio dio = Dio();
-
-    List<Place> places = [];
-
-    for(int i=0;i<data.length;i++) {
-      var element = data[i];
-    
-      Response response = await dio.get('https://maps.googleapis.com/maps/api/distancematrix/json', queryParameters: {
-        'origins': location,
-        'destinations': '${element['geometry']['location']['lat']},${element['geometry']['location']['lng']}',
-        'mode': 'walking',
-        'key': 'AIzaSyA7hFWktlCsXxOn_U_pnyzJHkqS0k-F7WE'
-      });
-
-      if(response.statusCode == HttpStatus.ok) {
-        print(element['rating']);
-        places.add(Place(
-          name: element['name'],
-          photo: 'https://maps.googleapis.com/maps/api/place/photo?photoreference='
-                  '${element['photos'][0]['photo_reference']}&maxwidth=${element['photos'][0]['width']}'
-                  '&key=$api',
-          rating: double.parse(element['rating']?.toString() ?? '0'),
-          location: '${element['geometry']['location']['lat']},${element['geometry']['location']['lng']}',
-          distance: response.data['rows'][0]['elements'][0]['distance']['text'],
-          estimatedTime: response.data['rows'][0]['elements'][0]['duration']['text'],
-        ));
-      }
-    }
-
-    return places;
-  }
 }

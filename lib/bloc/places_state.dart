@@ -9,10 +9,9 @@ class PlacesLoading extends PlacesState {}
 
 class PlaceLoaded extends PlacesState {
 
-  final List<Place> places;
-  final String nextPageToken;
+  final List<DocumentSnapshot> places;
 
-  PlaceLoaded(this.places, this.nextPageToken);
+  PlaceLoaded(this.places);
 
 }
 

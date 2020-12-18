@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nearby/bloc/places_bloc.dart';
+import 'package:nearby/place_card.dart';
 
 import 'models/place.dart';
 
@@ -14,26 +16,50 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  final String _location = '-27.467237358115597,153.0305656806858';
-
   final PlacesBloc _bloc = PlacesBloc();
-  
-  String _nextPageToken;
+  final ScrollController _scrollController = ScrollController();
+
+  List<DocumentSnapshot> _places = [];
+  bool _isLoading = false;
 
   void _placeLoadingListener(BuildContext context, PlacesState state) {
-    if(state is PlaceLoaded)
-      _nextPageToken = state.nextPageToken;
+    if(state is PlaceLoaded) {
+      _places.removeLast();
+      _places.addAll(state.places);
+      _isLoading = false;
+      state.places.forEach((element) => print(element.data().toString()));
+    }
+    else if(state is PlaceLoadFailed) {
+      _places.removeLast();
+      _isLoading = false;
+    }
+  }
+
+  void _loadPlace() {
+    _bloc.add(LoadPlaces(_places.isNotEmpty ? _places.last : null));
+    _places.add(null);
+    print('Last: $_isLoading');
+    _isLoading = true;
+  }
+
+  void _scrollListener() {
+    if (_scrollController.offset >= _scrollController.position.maxScrollExtent && 
+      !_scrollController.position.outOfRange && !_isLoading) {
+      _loadPlace();
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _bloc.add(LoadPlaces(_location, null)));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlace());
+    _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() { 
     _bloc.close();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -42,47 +68,22 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(title: Text('Nearby Places')),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: BlocConsumer<PlacesBloc, PlacesState>(
-                cubit: _bloc,
-                listener: _placeLoadingListener,
-                builder: (context, state) {
-                  if(state is PlacesLoading) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  else if(state is PlaceLoadFailed) {
-                    return Center(
-                      child: InkWell(
-                        child: Text(
-                          'Places Loading Failed!!!',
-                          style: TextStyle(
-                            color: Colors.blueGrey
-                          ),
-                        ),
-                      )
-                    );
-                  }
-                  else if(state is PlaceLoaded) {
-                    return _placeList(state.places);
-                  }
-                  else return Container();
-                }
+        child: BlocConsumer<PlacesBloc, PlacesState>(
+          cubit: _bloc,
+          listener: _placeLoadingListener,
+          builder: (context, state) => ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(5.0),
+            scrollDirection: Axis.horizontal,
+            itemCount: _places.length,
+            itemBuilder: (context, i) => _places[i] != null ? 
+              PlaceCard(_places[i].data()) : SizedBox(
+                width: 30.0,
+                height: 30.0,
+                child: CircularProgressIndicator()
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(10.0),
-              child: FlatButton(
-                onPressed: () => _bloc.add(LoadPlaces(_location, _nextPageToken)), 
-                color: Colors.lightBlue,
-                textColor: Colors.white,
-                minWidth: double.infinity,
-                child: Text('Next Page')
-              ),
-            )
-          ],
-        )
+          )
+        ),
       ),
     );
   }
